@@ -1,0 +1,26 @@
+# Estágio 1: Build do binário Go
+FROM golang:alpine AS builder
+
+WORKDIR /app
+
+# Copia os arquivos de dependências primeiro (aproveita o cache do Docker!)
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copia o código-fonte e compila um binário estático enxuto
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /pulsewatch-api ./cmd/api
+
+# Estágio 2: Imagem final ultraleve (apenas ~15MB!)
+FROM alpine:latest
+
+WORKDIR /root/
+
+# Certificados SSL para o nosso Worker conseguir acessar URLs https:// externas!
+RUN apk --no-cache add ca-certificates
+
+COPY --from=builder /pulsewatch-api .
+
+EXPOSE 8080
+
+CMD ["./pulsewatch-api"]

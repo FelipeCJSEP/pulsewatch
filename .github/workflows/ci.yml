@@ -1,0 +1,56 @@
+name: PulseWatch CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  backend-go:
+    name: Go Vet & Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run Static Analysis (go vet)
+        run: go vet ./...
+
+      - name: Run Unit Tests
+        run: go test ./... -v
+
+  frontend-angular:
+    name: Angular Build Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./pulsewatch-web
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-go@v5
+        if: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+          cache-dependency-path: ./pulsewatch-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Angular for Production
+        run: npm run build

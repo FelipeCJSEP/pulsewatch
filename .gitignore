@@ -1,0 +1,13 @@
+# Binários Go
+*.exe
+pulsewatch-api
+
+# Dependências e cache do Angular
+pulsewatch-web/node_modules/
+pulsewatch-web/dist/
+pulsewatch-web/.angular/
+
+# Arquivos de ambiente e IDE
+.env
+.vscode/
+.idea/

@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pulsewatch-db
+    environment:
+      POSTGRES_USER: pulsewatch
+      POSTGRES_PASSWORD: pulsewatch123
+      POSTGRES_DB: pulsewatch_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+
+volumes:
+  postgres_data:

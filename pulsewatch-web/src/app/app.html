@@ -1,0 +1,106 @@
+<div class="container">
+  <header class="header">
+    <h1>⚡ PulseWatch</h1>
+    <p>Monitoramento de Health Check & Gestão de Incidentes (Go + Angular)</p>
+  </header>
+
+  @if (errorMessage()) {
+  <div class="alert-error">{{ errorMessage() }}</div>
+  }
+
+  <div class="grid">
+    <!-- Coluna 1: Formulário de Cadastro -->
+    <section class="card">
+      <h2>Novo Monitor</h2>
+      <form [formGroup]="monitorForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label>Nome do Serviço</label>
+          <input type="text" formControlName="name" placeholder="Ex: GitHub API" />
+        </div>
+
+        <div class="form-group">
+          <label>URL Alvo (Target URL)</label>
+          <input type="text" formControlName="targetUrl" placeholder="https://api.exemplo.com" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Intervalo (seg)</label>
+            <input type="number" formControlName="intervalSeconds" />
+          </div>
+
+          <div class="form-group">
+            <label>Limite de Falhas</label>
+            <input type="number" formControlName="failureThreshold" />
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="monitorForm.invalid">
+          + Adicionar Monitor
+        </button>
+      </form>
+    </section>
+
+    <!-- Coluna 2: Lista de Monitores em Tempo Real -->
+    <section class="card">
+      <h2>Serviços Monitorados ({{ monitors().length }})</h2>
+
+      <div class="monitor-list">
+        @for (m of monitors(); track m.id) {
+        <div class="monitor-item" (click)="selectMonitor(m)">
+          <div class="monitor-info">
+            <strong>{{ m.name }}</strong>
+            <span class="url">{{ m.targetUrl }}</span>
+            <small>
+              Falhas seguidas: {{ m.consecutiveFailures }} / {{ m.failureThreshold }}
+              @if (m.lastCheckedAt) {
+              • Última checagem: {{ m.lastCheckedAt | date:'HH:mm:ss' }}
+              }
+            </small>
+          </div>
+
+          <span class="badge" [class]="'badge-' + m.status.toLowerCase()">
+            {{ m.status }}
+          </span>
+        </div>
+        } @empty {
+        <p class="empty">Nenhum serviço monitorado ainda.</p>
+        }
+      </div>
+    </section>
+  </div>
+
+  <!-- Painel Inferior: Histórico de Incidentes do Monitor Selecionado -->
+  @if (selectedMonitor(); as selected) {
+  <section class="card incidents-section">
+    <h2>🚨 Histórico de Incidentes: {{ selected.name }}</h2>
+
+    @for (inc of incidents(); track inc.id) {
+    <div class="incident-item">
+      <div>
+        <strong>Motivo: {{ inc.reason }}</strong>
+        <small>
+          Aberto em: {{ inc.openedAt | date:'dd/MM/yyyy HH:mm:ss' }}
+          @if (inc.resolvedAt) {
+          • Resolvido em: {{ inc.resolvedAt | date:'dd/MM/yyyy HH:mm:ss' }}
+          }
+        </small>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        @if (inc.status === 'OPEN') {
+        <button type="button" style="width: auto; padding: 0.35rem 0.75rem; font-size: 0.8rem;"
+          (click)="acknowledge(inc.id)">
+          Reconhecer
+        </button>
+        }
+        <span class="badge" [class]="'badge-' + inc.status.toLowerCase()">
+          {{ inc.status }}
+        </span>
+      </div>
+    </div>
+    } @empty {
+    <p class="empty">✅ Nenhum incidente registrado para este serviço!</p>
+    }
+  </section>
+  }
+</div>
